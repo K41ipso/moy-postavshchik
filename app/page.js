@@ -27,19 +27,6 @@ export default function Home() {
 
   const isBuilderEmpty = mode === 'builder' && !hasSearched;
 
-  // Блокируем скролл в режиме builder без поиска
-  useEffect(() => {
-    if (isBuilderEmpty) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isBuilderEmpty]);
-
   // Сброс страниц при изменении фильтров
   useEffect(() => {
     setCurrentPage(1);
@@ -52,10 +39,6 @@ export default function Home() {
   const handleModeChange = (newMode) => {
     if (newMode === mode) return;
     setMode(newMode);
-    
-    if (newMode === 'builder' && !hasSearched) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
   };
 
   const handleSearch = (criteria) => {
@@ -104,36 +87,6 @@ export default function Home() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-
-  // Запрещаем скроллить ниже футера
-  useEffect(() => {
-    if (isBuilderEmpty) return;
-
-    const clampScroll = () => {
-      const footer = document.querySelector('footer');
-      if (footer) {
-        const footerRect = footer.getBoundingClientRect();
-        const footerTop = footerRect.top + window.scrollY;
-        const viewportHeight = window.innerHeight;
-        const maxScroll = footerTop - viewportHeight + 100; // +100 чтобы футер был виден
-        
-        if (window.scrollY > maxScroll && maxScroll > 0) {
-          window.scrollTo({ top: maxScroll, behavior: 'auto' });
-        }
-      }
-    };
-
-    window.addEventListener('scroll', clampScroll, { passive: true });
-    window.addEventListener('resize', clampScroll, { passive: true });
-    
-    // Запускаем при изменении контента
-    clampScroll();
-    
-    return () => {
-      window.removeEventListener('scroll', clampScroll);
-      window.removeEventListener('resize', clampScroll);
-    };
-  }, [isBuilderEmpty, mode, hasSearched, currentPage, builderPage, catalogQuery, catalogCategory]);
 
   const Pagination = ({ currentPage, totalPages, goToPage }) => {
     if (totalPages <= 1) return null;
@@ -194,9 +147,12 @@ export default function Home() {
   };
 
   return (
-    <div className={isBuilderEmpty ? 'h-screen overflow-hidden' : ''}>
-      {/* Основной контент */}
-      <main className="p-4 md:p-8 relative">
+    // Правильный flex layout
+    <div className={`min-h-screen flex flex-col bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 ${
+      isBuilderEmpty ? 'overflow-hidden' : ''
+    }`}>
+      {/* Основной контент с flex-1 */}
+      <main className="flex-1 p-4 md:p-8">
         <div className="max-w-7xl mx-auto w-full">
           {/* Header */}
           <header className="text-center mb-10">
@@ -240,17 +196,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Контент */}
-          <div className="relative">
-            {/* Умный подбор */}
-            <div 
-              className={`transition-all duration-400 ease-out ${
-                mode === 'builder' 
-                  ? 'opacity-100 transform scale-100 translate-y-0' 
-                  : 'opacity-0 transform scale-95 translate-y-4 pointer-events-none absolute inset-0'
-              }`}
-              style={{ willChange: 'opacity, transform' }}
-            >
+          {/* Условный рендеринг вместо absolute positioning */}
+          {mode === 'builder' ? (
+            // Умный подбор
+            <>
               <SearchBuilder onSearch={handleSearch} />
               
               {hasSearched && (
@@ -283,17 +232,10 @@ export default function Home() {
                   )}
                 </div>
               )}
-            </div>
-
-            {/* Каталог */}
-            <div 
-              className={`transition-all duration-400 ease-out ${
-                mode === 'catalog' 
-                  ? 'opacity-100 transform scale-100 translate-y-0' 
-                  : 'opacity-0 transform scale-95 translate-y-4 pointer-events-none absolute inset-0'
-              }`}
-              style={{ willChange: 'opacity, transform' }}
-            >
+            </>
+          ) : (
+            // Каталог
+            <>
               <div className="bg-white p-6 rounded-2xl shadow-xl mb-8 flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
                   <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -338,12 +280,12 @@ export default function Home() {
                 totalPages={catalogTotalPages} 
                 goToPage={goToCatalogPage} 
               />
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </main>
 
-      {/* Футер */}
+      {/* Футер вне main */}
       {!isBuilderEmpty && <Footer />}
 
       <SupplierModal 
