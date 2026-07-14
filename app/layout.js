@@ -1,13 +1,21 @@
-import localFont from "next/font/local";
-import "./globals.css";
+import { Inter } from 'next/font/google';
+import './globals.css';
 
-// Если у вас были импорты шрифтов, оставьте их.
-// Главное - уберите типы из функции RootLayout
+const inter = Inter({ 
+  subsets: ['latin', 'cyrillic'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+export const metadata = {
+  title: 'Мой.ПоставщИИк',
+  description: 'Умный поиск и каталог поставщиков продуктов питания',
+};
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ru">
-      <body className="antialiased">
+    <html lang="ru" className={inter.variable}>
+      <body className="antialiased font-sans">
         {children}
       </body>
     </html>

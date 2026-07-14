@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { LocationIcon, PriceIcon, VolumeIcon, SpeedIcon, CertificateIcon, PhoneIcon, StarIcon } from './Icons';
 
-export default function SupplierModal({ supplier, isOpen, onClose }) {
+export default function SupplierModal({ supplier, isOpen, onClose, onAddToPlan }) {
   const [note, setNote] = useState('');
   const [volume, setVolume] = useState(supplier?.minOrder || 1);
   const [isVisible, setIsVisible] = useState(false);
@@ -176,7 +176,7 @@ export default function SupplierModal({ supplier, isOpen, onClose }) {
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-3">📝 Мои заметки</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3"> Мои заметки</h3>
             <textarea
               value={note}
               onChange={handleNoteChange}
@@ -186,7 +186,7 @@ export default function SupplierModal({ supplier, isOpen, onClose }) {
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row gap-4 shrink-0">
+        <div className="p-6 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row gap-3 shrink-0">
           <a
             href={`tel:${supplier.contact.replace(/\D/g, '')}`}
             className="flex-1 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-orange-600 hover:to-red-600 transition flex items-center justify-center gap-2"
@@ -194,6 +194,15 @@ export default function SupplierModal({ supplier, isOpen, onClose }) {
             <PhoneIcon className="w-6 h-6" />
             Позвонить поставщику
           </a>
+          <button
+            onClick={() => onAddToPlan(supplier, volume)}
+            className="flex-1 py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-indigo-600 transition flex items-center justify-center gap-2"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            В план закупок
+          </button>
           <button
             onClick={handleClose}
             className="px-8 py-4 bg-white border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition"

@@ -5,6 +5,10 @@ import SupplierCard from '../components/SupplierCard';
 import SupplierModal from '../components/SupplierModal';
 import ScrollToTop from '../components/ScrollToTop';
 import Footer from '../components/Footer';
+import FavoritesTray from '../components/FavoritesTray';
+import OrderCalendar from '../components/OrderCalendar';
+import OrderPlannerModal from '../components/OrderPlannerModal';
+import Toast from '../components/Toast';
 import { suppliersData, getDictionaries } from '../lib/dictionaries';
 import { scoreSuppliers } from '../lib/scoring';
 import { BuilderIcon, ListIcon, SearchIcon, ChevronLeftIcon, ChevronRightIcon } from '../components/Icons';
@@ -23,11 +27,16 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [builderPage, setBuilderPage] = useState(1);
 
+  const [isOrderPlannerOpen, setIsOrderPlannerOpen] = useState(false);
+  const [orderPlannerSupplier, setOrderPlannerSupplier] = useState(null);
+  const [orderPlannerVolume, setOrderPlannerVolume] = useState(0);
+
+  const [toast, setToast] = useState(null);
+
   const dicts = getDictionaries();
 
   const isBuilderEmpty = mode === 'builder' && !hasSearched;
 
-  // Сброс страниц при изменении фильтров
   useEffect(() => {
     setCurrentPage(1);
   }, [catalogQuery, catalogCategory]);
@@ -50,6 +59,16 @@ export default function Home() {
   const openModal = (supplier) => {
     setSelectedSupplier(supplier);
     setIsModalOpen(true);
+  };
+
+  const handleAddToPlan = (supplier, volume) => {
+    setOrderPlannerSupplier(supplier);
+    setOrderPlannerVolume(volume);
+    setIsOrderPlannerOpen(true);
+  };
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
   };
 
   const filteredCatalog = useMemo(() => {
@@ -147,11 +166,9 @@ export default function Home() {
   };
 
   return (
-    // Правильный flex layout
     <div className={`min-h-screen flex flex-col bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 ${
       isBuilderEmpty ? 'overflow-hidden' : ''
     }`}>
-      {/* Основной контент с flex-1 */}
       <main className="flex-1 p-4 md:p-8">
         <div className="max-w-7xl mx-auto w-full">
           {/* Header */}
@@ -164,8 +181,8 @@ export default function Home() {
             </p>
           </header>
 
-          {/* Переключатель */}
-          <div className="flex justify-center mb-8">
+          {/* Переключатель + Избранное + Календарь */}
+          <div className="flex justify-center items-center gap-4 mb-8">
             <div className="bg-white/20 backdrop-blur-md p-1 rounded-xl flex gap-1 border border-white/30 shadow-lg relative overflow-hidden">
               <div 
                 className="absolute top-1 h-[calc(100%-8px)] bg-white rounded-lg shadow-lg transition-transform duration-300 ease-out"
@@ -194,11 +211,13 @@ export default function Home() {
                 <ListIcon className="w-5 h-5" /> Каталог ({suppliersData.length})
               </button>
             </div>
+
+            <FavoritesTray onOpenSupplier={openModal} />
+            <OrderCalendar showToast={showToast} onOpenSupplier={openModal} />
           </div>
 
-          {/* Условный рендеринг вместо absolute positioning */}
+          {/* Контент */}
           {mode === 'builder' ? (
-            // Умный подбор
             <>
               <SearchBuilder onSearch={handleSearch} />
               
@@ -234,7 +253,6 @@ export default function Home() {
               )}
             </>
           ) : (
-            // Каталог
             <>
               <div className="bg-white p-6 rounded-2xl shadow-xl mb-8 flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
@@ -285,14 +303,30 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Футер вне main */}
       {!isBuilderEmpty && <Footer />}
 
       <SupplierModal 
         supplier={selectedSupplier}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onAddToPlan={handleAddToPlan}
       />
+
+      <OrderPlannerModal
+        supplier={orderPlannerSupplier}
+        volume={orderPlannerVolume}
+        isOpen={isOrderPlannerOpen}
+        onClose={() => setIsOrderPlannerOpen(false)}
+        onSuccess={(msg) => showToast(msg, 'success')}
+      />
+
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
 
       <ScrollToTop />
     </div>
