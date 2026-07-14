@@ -73,11 +73,16 @@ export default function OrderCalendar({ showToast, onOpenSupplier }) {
       } catch (e) {}
     }
     
+    const orderToRemove = ordersList.find(o => o.id === orderId);
     ordersList = ordersList.filter(order => order.id !== orderId);
     localStorage.setItem('orders', JSON.stringify(ordersList));
     
     loadOrders();
     window.dispatchEvent(new Event('ordersChanged'));
+    
+    if (orderToRemove && showToast) {
+      showToast(`Заказ "${orderToRemove.supplierName}" удалён из плана`, 'error');
+    }
   };
 
   const handleRemoveFromCalendar = (order) => {
@@ -95,7 +100,6 @@ export default function OrderCalendar({ showToast, onOpenSupplier }) {
     loadOrders();
     window.dispatchEvent(new Event('ordersChanged'));
     
-    // Показываем уведомление
     if (showToast) {
       showToast(`Заказ "${order.supplierName}" удалён из плана`, 'error');
     }
@@ -143,7 +147,7 @@ export default function OrderCalendar({ showToast, onOpenSupplier }) {
           onClick={() => setIsOpen(!isOpen)}
           className="relative p-2.5 bg-white/20 backdrop-blur-md rounded-lg hover:bg-white/30 transition-colors border border-white/30"
         >
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           
@@ -155,7 +159,7 @@ export default function OrderCalendar({ showToast, onOpenSupplier }) {
         </button>
 
         <div 
-          className={`absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50 transition-all duration-300 ease-out origin-top ${
+          className={`absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50 transition-all duration-300 ease-out origin-top ${
             isOpen 
               ? 'opacity-100 max-h-[600px] scale-100' 
               : 'opacity-0 max-h-0 scale-95 pointer-events-none'
@@ -164,7 +168,7 @@ export default function OrderCalendar({ showToast, onOpenSupplier }) {
           <div className="p-4 border-b border-gray-100 bg-gray-50">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-bold text-gray-900">План закупок</h3>
+                <h3 className="font-bold text-gray-900 text-sm sm:text-base">План закупок</h3>
                 <p className="text-xs text-gray-500 mt-0.5">{orders.length} заказов</p>
               </div>
               <button
@@ -195,11 +199,11 @@ export default function OrderCalendar({ showToast, onOpenSupplier }) {
               orders.map((order) => (
                 <div
                   key={order.id}
-                  className="p-4 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-b-0 group"
+                  className="p-3 sm:p-4 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-b-0 group"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0 pr-3">
-                      <p className="font-semibold text-gray-900 truncate">{order.supplierName}</p>
+                      <p className="font-semibold text-gray-900 truncate text-sm">{order.supplierName}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{order.category}</p>
                     </div>
                     
@@ -223,7 +227,7 @@ export default function OrderCalendar({ showToast, onOpenSupplier }) {
                     </span>
                   </div>
                   
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">
                       Объем: <span className="font-semibold text-gray-900">{order.volume} {order.unit}</span>
                     </span>
